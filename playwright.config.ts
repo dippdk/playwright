@@ -1,4 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 /**
  * Read environment variables from file.
@@ -25,15 +28,33 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('')`. */
-    // baseURL: 'http://localhost:3000',
+  baseURL: process.env.BASE_URL,
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+  httpCredentials: {
+    username: process.env.HTTP_USERNAME || '',
+    password: process.env.HTTP_PASSWORD || '',
   },
+
+  headless: false,
+  trace: 'on-first-retry',
+},
 
   /* Configure projects for major browsers */
   projects: [
+      {
+    name: 'setup',
+    testMatch: /.*\.setup\.ts/,
+   },
+   {
+    name: 'chromium',
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: '.auth/user.json',
+    },
+    dependencies: ['setup'],
+   },
+  ],
+  /*
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
@@ -68,7 +89,7 @@ export default defineConfig({
     //   name: 'Google Chrome',
     //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
     // },
-  ],
+ // ],
 
   /* Run your local dev server before starting the tests */
   // webServer: {
